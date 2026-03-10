@@ -4,6 +4,8 @@
 
 const path = require('path');
 const express = require('express');
+const dotenv = require('dotenv');
+dotenv.config();
 
 //////////////////////////
 // Constants
@@ -17,9 +19,30 @@ const app = express();
 // Middleware/Controllers
 //////////////////////////
 
+
 const serveStatic = express.static(pathToFrontend);
 
+const serveGifs = async (req, res, next) => {
+    try {
+        const response = await fetch(`https://api.giphy.com/v1/gifs/trending?limit=3&rating=g&api_key=${process.env.API_KEY}`)
+        if (!response.ok) {
+            throw Error(`Fetch failed. ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        res.send(data)
+    }
+
+    catch (error) {
+        res.status(503).send(error);
+    }
+}
+
+
+
+
 app.use(serveStatic);
+
+app.get("/api/gifs", serveGifs)
 
 //////////////////////////
 // Listener
